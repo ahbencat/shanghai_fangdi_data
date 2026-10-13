@@ -1,0 +1,42 @@
+# 每日数据 push 后自动重建并部署 GitHub Pages。
+# 本文件是源文件；同步到 fangdi_data 仓库时放到 .github/workflows/pages.yml
+name: Deploy Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'monthly/**'
+      - 'pages/**'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build static site
+        run: python3 pages/build.py
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

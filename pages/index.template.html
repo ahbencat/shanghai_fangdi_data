@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>上海房产成交数据</title>
+    <style>
+        :root {
+            --bg: #1a1b2e;
+            --surface: #232540;
+            --card: #2a2d4a;
+            --border: #363a5a;
+            --text: #e2e4f0;
+            --muted: #888cad;
+            --accent: #6366f1;
+            --accent-hover: #5457e5;
+            --danger: #ef4444;
+            --success: #22c55e;
+            --radius: 8px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang SC', 'Noto Sans SC', 'Helvetica Neue', Arial, sans-serif;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 16px 20px;
+            background: var(--bg);
+            min-height: 100vh;
+            color: var(--text);
+            font-size: 13px;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .page-header h1 {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text);
+            margin: 0 0 2px 0;
+            letter-spacing: 1px;
+        }
+
+        .page-header .subtitle {
+            font-size: 12px;
+            color: var(--muted);
+            margin: 0;
+        }
+
+        .calendar-container {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px 18px;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .nav-btn {
+            background: transparent;
+            color: var(--text);
+            border: 1px solid var(--border);
+            padding: 5px 12px;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all .15s;
+            user-select: none;
+        }
+
+        .nav-btn:hover {
+            background: rgba(99,102,241,.12);
+            border-color: var(--accent);
+        }
+
+        .nav-btn:active {
+            opacity: .8;
+        }
+
+        .nav-btn:disabled {
+            opacity: .35;
+            cursor: default;
+            pointer-events: none;
+        }
+
+        .current-month {
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--text);
+            letter-spacing: 2px;
+        }
+
+        .weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 3px;
+            margin-bottom: 4px;
+        }
+
+        .weekday {
+            text-align: center;
+            padding: 4px 2px;
+            font-weight: 600;
+            color: var(--muted);
+            font-size: 12px;
+            letter-spacing: .5px;
+        }
+
+        .weekday:first-child, .weekday:last-child {
+            color: var(--danger);
+        }
+
+        .days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+        }
+
+        .day {
+            aspect-ratio: 1.1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: var(--surface);
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: all .15s;
+            position: relative;
+            padding: 4px 2px;
+            border: 1px solid transparent;
+            overflow: hidden;
+        }
+
+        .day:hover {
+            background: rgba(99,102,241,.08);
+            border-color: var(--accent);
+        }
+
+        .day.has-data {
+            background: rgba(99,102,241,.08);
+            border-color: transparent;
+        }
+
+        .day.has-data:hover {
+            background: rgba(99,102,241,.15);
+            border-color: var(--accent);
+        }
+
+        .day.has-data-more {
+            background: rgba(99,102,241,.18);
+        }
+
+        .day.has-data-most {
+            background: rgba(99,102,241,.28);
+        }
+
+        .day.today {
+            background: var(--accent) !important;
+            border-color: var(--accent);
+        }
+
+        .day.today:hover {
+            background: var(--accent-hover) !important;
+        }
+
+        .day.today .day-number {
+            color: #fff;
+        }
+
+        .day.today .count, .day.today .area {
+            color: rgba(255,255,255,.85);
+        }
+
+        .day.other-month {
+            opacity: .2;
+            pointer-events: none;
+        }
+
+        .day.selected {
+            background: var(--success) !important;
+            border-color: var(--success);
+        }
+
+        .day.selected .day-number {
+            color: #fff;
+        }
+
+        .day.selected .count, .day.selected .area {
+            color: rgba(255,255,255,.85);
+        }
+
+        .day-number {
+            font-size: 16px;
+            font-weight: 600;
+            line-height: 1.3;
+        }
+
+        .markets {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            gap: 2px;
+            margin-top: 5px;
+        }
+
+        .market {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+        }
+
+        .market.yishou {
+            border-left: 1px solid rgba(255,255,255,0.15);
+            padding-left: 4px;
+        }
+
+        .mkt-line {
+            font-size: 10px;
+            line-height: 1.3;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .mkt-area {
+            font-size: 10px;
+            line-height: 1.3;
+            white-space: nowrap;
+        }
+
+        .mkt-line.ershou { color: #a5b4fc; }
+        .mkt-area.ershou { color: #9ca3af; }
+        .mkt-line.yishou { color: #fbbf24; }
+        .mkt-area.yishou { color: #fbbf24; }
+
+        .today .mkt-line, .today .mkt-area { color: #fff; }
+        .selected .mkt-line, .selected .mkt-area { color: #fff; }
+
+        .monthly-summary {
+            margin-top: 10px;
+            padding: 10px 14px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            transition: all .3s;
+        }
+
+        .summary-title {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--accent);
+            margin-bottom: 6px;
+            letter-spacing: 1px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-around;
+            gap: 10px;
+        }
+
+        .summary-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+        }
+
+        .summary-item + .summary-item {
+            border-left: 1px solid var(--border);
+        }
+
+        .summary-label {
+            font-size: 11px;
+            color: var(--muted);
+            margin-bottom: 1px;
+        }
+
+        .summary-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .summary-row + .summary-row {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid var(--border);
+        }
+
+        .status-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 10px;
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,.5);
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 28px 32px;
+            min-width: 300px;
+            max-width: 90vw;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 4px 20px rgba(0,0,0,.3);
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 14px;
+            font-size: 20px;
+            cursor: pointer;
+            color: var(--muted);
+            transition: color .2s;
+            line-height: 1;
+            background: none;
+            border: none;
+            padding: 4px;
+        }
+
+        .close-btn:hover {
+            color: var(--text);
+        }
+
+        .modal-date {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .modal-count, .modal-area {
+            font-size: 15px;
+            margin: 12px 0;
+            color: var(--muted);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 10px;
+        }
+
+        .modal-count strong, .modal-area strong {
+            color: var(--accent);
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .no-data {
+            color: var(--muted);
+            font-style: italic;
+        }
+
+        @media (max-width: 600px) {
+            body { padding: 6px 6px; font-size: 12px; }
+            .page-header h1 { font-size: 15px; }
+            .page-header { margin-bottom: 8px; }
+            .page-header .subtitle { font-size: 10px; }
+            .calendar-container { padding: 8px 6px; }
+            .calendar-header { margin-bottom: 6px; }
+            .current-month { font-size: 14px; }
+            .weekdays { gap: 2px; }
+            .weekday { font-size: 10px; padding: 2px 1px; }
+            .days { gap: 4px; }
+            .day { aspect-ratio: 1.0; padding: 2px 1px; }
+            .day-number { font-size: 13px; }
+            .mkt-line, .mkt-area { font-size: 9px; }
+            .nav-btn { padding: 3px 8px; font-size: 11px; }
+            .monthly-summary { padding: 6px 8px; margin-top: 6px; }
+            .summary-title { font-size: 10px; margin-bottom: 3px; }
+            .summary-value { font-size: 14px; }
+            .summary-label { font-size: 10px; }
+            .modal { padding: 16px; min-width: auto; }
+            .modal-date { font-size: 15px; }
+            .modal-count, .modal-area { font-size: 13px; margin: 8px 0; }
+            .status-bar { margin-top: 6px; font-size: 10px; }
+        }
+
+        @media (max-width: 380px) {
+            .day { aspect-ratio: 0.9; }
+            .day-number { font-size: 11px; }
+            .mkt-line, .mkt-area { font-size: 8px; }
+            .current-month { font-size: 12px; }
+            body { padding: 4px 3px; }
+            .calendar-container { padding: 6px 3px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-header">
+        <h1>上海房产成交数据</h1>
+        <p class="subtitle">二手房 &amp; 一手房每日网签套数 &amp; 面积 · 数据来源于 fangdi.com.cn</p>
+    </div>
+
+    <div class="calendar-container">
+        <div class="calendar-header">
+            <button class="nav-btn" id="prevBtn" onclick="prevMonth()">‹ 上一月</button>
+            <div class="current-month" id="currentMonth"></div>
+            <button class="nav-btn" id="nextBtn" onclick="nextMonth()">下一月 ›</button>
+        </div>
+
+        <div class="weekdays">
+            <div class="weekday">日</div>
+            <div class="weekday">一</div>
+            <div class="weekday">二</div>
+            <div class="weekday">三</div>
+            <div class="weekday">四</div>
+            <div class="weekday">五</div>
+            <div class="weekday">六</div>
+        </div>
+
+        <div class="days" id="calendarDays"></div>
+
+        <div class="monthly-summary" id="monthlySummary">
+            <div class="summary-title">本月合计</div>
+            <div class="summary-row">
+                <div class="summary-item">
+                    <span class="summary-label">二手房套数</span>
+                    <span class="summary-value" id="monthlyCount">-</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">二手房面积</span>
+                    <span class="summary-value" id="monthlyArea">-</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">有数据天数</span>
+                    <span class="summary-value" id="monthlyDays">-</span>
+                </div>
+            </div>
+            <div class="summary-row" id="newHouseSummary" style="display:none;">
+                <div class="summary-item">
+                    <span class="summary-label">一手房套数</span>
+                    <span class="summary-value" id="monthlyNewCount">-</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">一手房面积</span>
+                    <span class="summary-value" id="monthlyNewArea">-</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">有数据天数</span>
+                    <span class="summary-value" id="monthlyNewDays">-</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="status-bar">
+            <span id="status"></span>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modalOverlay" onclick="closeModal()">
+        <div class="modal" onclick="event.stopPropagation()">
+            <span class="close-btn" onclick="closeModal()">×</span>
+            <div class="modal-date" id="modalDate"></div>
+            <div class="modal-count" id="modalCount"></div>
+            <div class="modal-area" id="modalArea"></div>
+            <div class="modal-count" id="modalNewCount" style="display:none;"></div>
+            <div class="modal-area" id="modalNewArea" style="display:none;"></div>
+        </div>
+    </div>
+
+    <script>
+        // build.py 在下一行注入数据 JSON（占位符仅此一处，勿在注释中复写）
+        const HOUSE_DATA = /*__DATA__*/;
+        const ALL_DAYS = HOUSE_DATA.days || {};
+
+        let currentYear, currentMonth;
+        let houseData = {};
+        let selectedDate = null;
+
+        const DATE_KEYS = Object.keys(ALL_DAYS).sort();
+        const FIRST_MONTH = DATE_KEYS.length ? DATE_KEYS[0].slice(0, 7) : null;
+        const LAST_MONTH = DATE_KEYS.length ? DATE_KEYS[DATE_KEYS.length - 1].slice(0, 7) : null;
+        const LAST_DATE = DATE_KEYS.length ? DATE_KEYS[DATE_KEYS.length - 1] : null;
+
+        function monthKey(y, m) {
+            return `${y}-${String(m + 1).padStart(2, '0')}`;
+        }
+
+        function getMonthDataMax() {
+            let maxCount = 0;
+            for (const [dateStr, data] of Object.entries(houseData)) {
+                const [y, m] = dateStr.split('-');
+                if (parseInt(y) === currentYear && parseInt(m) === currentMonth + 1) {
+                    if (data.count > maxCount) maxCount = data.count;
+                }
+            }
+            return maxCount;
+        }
+
+        function initCalendar() {
+            // 初始月定位到数据最新的月份，保证打开页面总有内容
+            const parts = (LAST_DATE || '').split('-').map(Number);
+            if (parts.length === 3 && !isNaN(parts[0])) {
+                currentYear = parts[0];
+                currentMonth = parts[1] - 1;
+            } else {
+                const today = new Date();
+                currentYear = today.getFullYear();
+                currentMonth = today.getMonth();
+            }
+            if (LAST_DATE) {
+                document.getElementById('status').textContent = `数据截至 ${LAST_DATE} · 每日自动更新`;
+            }
+            loadMonthData();
+        }
+
+        function loadMonthData() {
+            houseData = {};
+            for (const [dateStr, data] of Object.entries(ALL_DAYS)) {
+                const [y, m] = dateStr.split('-');
+                if (parseInt(y) === currentYear && parseInt(m) === currentMonth + 1) {
+                    houseData[dateStr] = data;
+                }
+            }
+            renderCalendar();
+        }
+
+        function updateNav() {
+            const cur = monthKey(currentYear, currentMonth);
+            document.getElementById('prevBtn').disabled = !FIRST_MONTH || cur <= FIRST_MONTH;
+            document.getElementById('nextBtn').disabled = !LAST_MONTH || cur >= LAST_MONTH;
+        }
+
+        function prevMonth() {
+            if (!FIRST_MONTH || monthKey(currentYear, currentMonth) <= FIRST_MONTH) return;
+            if (currentMonth === 0) {
+                currentMonth = 11;
+                currentYear--;
+            } else {
+                currentMonth--;
+            }
+            loadMonthData();
+        }
+
+        function nextMonth() {
+            if (!LAST_MONTH || monthKey(currentYear, currentMonth) >= LAST_MONTH) return;
+            if (currentMonth === 11) {
+                currentMonth = 0;
+                currentYear++;
+            } else {
+                currentMonth++;
+            }
+            loadMonthData();
+        }
+
+        function updateMonthlySummary() {
+            let totalCount = 0;
+            let totalArea = 0;
+            let dataDays = 0;
+            let newCount = 0;
+            let newArea = 0;
+            let newDays = 0;
+
+            for (const [dateStr, data] of Object.entries(houseData)) {
+                const [y, m] = dateStr.split('-');
+                if (parseInt(y) === currentYear && parseInt(m) === currentMonth + 1) {
+                    totalCount += data.count || 0;
+                    totalArea += data.area || 0;
+                    dataDays++;
+                    if (data.newCount != null) {
+                        newCount += data.newCount;
+                        newArea += data.newArea || 0;
+                        newDays++;
+                    }
+                }
+            }
+
+            document.getElementById('monthlyCount').textContent = dataDays > 0 ? totalCount.toLocaleString() + ' 套' : '-';
+            document.getElementById('monthlyArea').textContent = dataDays > 0 ? totalArea.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0}) + ' ㎡' : '-';
+            document.getElementById('monthlyDays').textContent = dataDays > 0 ? dataDays + ' 天' : '-';
+
+            const newHouseRow = document.getElementById('newHouseSummary');
+            if (newDays > 0) {
+                newHouseRow.style.display = '';
+                document.getElementById('monthlyNewCount').textContent = newCount.toLocaleString() + ' 套';
+                document.getElementById('monthlyNewArea').textContent = newArea.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0}) + ' ㎡';
+                document.getElementById('monthlyNewDays').textContent = newDays + ' 天';
+            } else {
+                newHouseRow.style.display = 'none';
+            }
+        }
+
+        function renderCalendar() {
+            const firstDay = new Date(currentYear, currentMonth, 1);
+            const lastDay = new Date(currentYear, currentMonth + 1, 0);
+            const daysInMonth = lastDay.getDate();
+            const startDay = firstDay.getDay();
+
+            const today = new Date();
+            const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
+            document.getElementById('currentMonth').textContent = `${currentYear}年${currentMonth + 1}月`;
+
+            let html = '';
+
+            for (let i = 0; i < startDay; i++) {
+                html += '<div class="day other-month"></div>';
+            }
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const isToday = dateStr === todayStr;
+                const isSelected = selectedDate === dateStr;
+
+                let dayClass = 'day';
+                if (isToday) dayClass += ' today';
+                if (isSelected) dayClass += ' selected';
+
+                const data = houseData[dateStr];
+                let marketHtml = '';
+                if (data && data.count) {
+                    const maxCount = getMonthDataMax();
+                    const ratio = data.count / maxCount;
+                    if (ratio > 0.66) dayClass += ' has-data-most';
+                    else if (ratio > 0.33) dayClass += ' has-data-more';
+                    else dayClass += ' has-data';
+
+                    marketHtml += `<div class="market ershou"><div class="mkt-line">二手: ${data.count}套</div><div class="mkt-area">${data.area}平方</div></div>`;
+                    if (data.newCount != null) {
+                        marketHtml += `<div class="market yishou"><div class="mkt-line">一手: ${data.newCount}套</div><div class="mkt-area">${data.newArea}平方</div></div>`;
+                    }
+                } else if (data && data.newCount != null) {
+                    marketHtml += `<div class="market yishou"><div class="mkt-line">一手: ${data.newCount}套</div><div class="mkt-area">${data.newArea}平方</div></div>`;
+                }
+                if (marketHtml) {
+                    marketHtml = `<div class="markets">${marketHtml}</div>`;
+                }
+
+                html += `
+                    <div class="${dayClass}" onclick="showDetail('${dateStr}', ${day})">
+                        <div class="day-number">${day}</div>
+                        ${marketHtml}
+                    </div>
+                `;
+            }
+
+            document.getElementById('calendarDays').innerHTML = html;
+            updateMonthlySummary();
+            updateNav();
+        }
+
+        function showDetail(dateStr, day) {
+            selectedDate = dateStr;
+            renderCalendar();
+
+            document.getElementById('modalDate').textContent = `${currentYear}年${currentMonth + 1}月${day}日`;
+
+            const data = houseData[dateStr];
+            const modalNewCount = document.getElementById('modalNewCount');
+            const modalNewArea = document.getElementById('modalNewArea');
+            if (data && data.count != null) {
+                document.getElementById('modalCount').innerHTML = `<span>二手房套数</span> <strong>${data.count}</strong>`;
+                document.getElementById('modalArea').innerHTML = `<span>二手房面积</span> <strong>${data.area} ㎡</strong>`;
+            } else if (data && data.newCount != null) {
+                document.getElementById('modalCount').innerHTML = '<span class="no-data">二手房暂无数据</span>';
+                document.getElementById('modalArea').innerHTML = '';
+            } else {
+                document.getElementById('modalCount').innerHTML = '<span class="no-data">暂无数据</span>';
+                document.getElementById('modalArea').innerHTML = '';
+            }
+            if (data && data.newCount != null) {
+                modalNewCount.style.display = '';
+                modalNewArea.style.display = '';
+                modalNewCount.innerHTML = `<span>一手房套数</span> <strong>${data.newCount}</strong>`;
+                modalNewArea.innerHTML = `<span>一手房面积</span> <strong>${data.newArea} ㎡</strong>`;
+            } else {
+                modalNewCount.style.display = 'none';
+                modalNewArea.style.display = 'none';
+            }
+
+            document.getElementById('modalOverlay').classList.add('show');
+        }
+
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('show');
+        }
+
+        window.onload = initCalendar;
+    </script>
+</body>
+</html>
