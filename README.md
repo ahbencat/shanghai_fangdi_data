@@ -2,6 +2,8 @@
 
 上海市房产网签成交数据的按月归档，以 Markdown 表格形式记录每日成交套数与成交面积。涵盖**二手房**与**一手房**两个市场。
 
+**在线展示**：<https://ahbencat.github.io/shanghai_fangdi_data/>（GitHub Actions 每日数据 push 后自动更新）
+
 ## 数据范围
 
 - 二手房：**自 2025-11 起**，持续更新至当前
