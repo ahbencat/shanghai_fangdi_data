@@ -203,29 +203,30 @@
         }
 
         .day-number {
-            font-size: 16px;
+            font-size: 20px;
             font-weight: 600;
             line-height: 1.3;
         }
 
         .markets {
             display: flex;
-            justify-content: space-around;
+            flex-direction: column;
+            align-items: center;
             width: 100%;
-            gap: 2px;
-            margin-top: 5px;
+            gap: 4px;
+            margin-top: 10px;
         }
 
         .market {
             display: flex;
             flex-direction: column;
             align-items: center;
-            flex: 1;
+            width: 100%;
         }
 
         .market.yishou {
-            border-left: 1px solid rgba(255,255,255,0.15);
-            padding-left: 4px;
+            border-top: 1px solid rgba(255,255,255,0.15);
+            padding-top: 4px;
         }
 
         .mkt-line {
@@ -393,8 +394,9 @@
             .weekday { font-size: 10px; padding: 2px 1px; }
             .days { gap: 4px; }
             .day { aspect-ratio: 0.78; padding: 2px 1px; }
-            .day-number { font-size: 13px; }
-            .mkt-line { font-size: 9px; }
+            .day-number { font-size: 16px; }
+            .markets { margin-top: 8px; }
+            .mkt-line { font-size: 8px; }
             .nav-btn { padding: 3px 8px; font-size: 11px; }
             .monthly-summary { padding: 6px 8px; margin-top: 6px; }
             .summary-title { font-size: 10px; margin-bottom: 3px; }
@@ -408,7 +410,8 @@
 
         @media (max-width: 380px) {
             .day { aspect-ratio: 0.72; }
-            .day-number { font-size: 11px; }
+            .day-number { font-size: 13px; }
+            .markets { margin-top: 6px; }
             .mkt-line { font-size: 8px; }
             .current-month { font-size: 12px; }
             body { padding: 4px 3px; }
