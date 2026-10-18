@@ -235,19 +235,11 @@
             white-space: nowrap;
         }
 
-        .mkt-area {
-            font-size: 10px;
-            line-height: 1.3;
-            white-space: nowrap;
-        }
-
         .mkt-line.ershou { color: #a5b4fc; }
-        .mkt-area.ershou { color: #9ca3af; }
         .mkt-line.yishou { color: #fbbf24; }
-        .mkt-area.yishou { color: #fbbf24; }
 
-        .today .mkt-line, .today .mkt-area { color: #fff; }
-        .selected .mkt-line, .selected .mkt-area { color: #fff; }
+        .today .mkt-line { color: #fff; }
+        .selected .mkt-line { color: #fff; }
 
         .monthly-summary {
             margin-top: 10px;
@@ -400,9 +392,9 @@
             .weekdays { gap: 2px; }
             .weekday { font-size: 10px; padding: 2px 1px; }
             .days { gap: 4px; }
-            .day { aspect-ratio: 1.0; padding: 2px 1px; }
+            .day { aspect-ratio: 0.78; padding: 2px 1px; }
             .day-number { font-size: 13px; }
-            .mkt-line, .mkt-area { font-size: 9px; }
+            .mkt-line { font-size: 9px; }
             .nav-btn { padding: 3px 8px; font-size: 11px; }
             .monthly-summary { padding: 6px 8px; margin-top: 6px; }
             .summary-title { font-size: 10px; margin-bottom: 3px; }
@@ -415,9 +407,9 @@
         }
 
         @media (max-width: 380px) {
-            .day { aspect-ratio: 0.9; }
+            .day { aspect-ratio: 0.72; }
             .day-number { font-size: 11px; }
-            .mkt-line, .mkt-area { font-size: 8px; }
+            .mkt-line { font-size: 8px; }
             .current-month { font-size: 12px; }
             body { padding: 4px 3px; }
             .calendar-container { padding: 6px 3px; }
@@ -654,12 +646,12 @@
                     else if (ratio > 0.33) dayClass += ' has-data-more';
                     else dayClass += ' has-data';
 
-                    marketHtml += `<div class="market ershou"><div class="mkt-line">二手: ${data.count}套</div><div class="mkt-area">${data.area}平方</div></div>`;
+                    marketHtml += `<div class="market ershou"><div class="mkt-line">二手: ${data.count}套</div></div>`;
                     if (data.newCount != null) {
-                        marketHtml += `<div class="market yishou"><div class="mkt-line">一手: ${data.newCount}套</div><div class="mkt-area">${data.newArea}平方</div></div>`;
+                        marketHtml += `<div class="market yishou"><div class="mkt-line">一手: ${data.newCount}套</div></div>`;
                     }
                 } else if (data && data.newCount != null) {
-                    marketHtml += `<div class="market yishou"><div class="mkt-line">一手: ${data.newCount}套</div><div class="mkt-area">${data.newArea}平方</div></div>`;
+                    marketHtml += `<div class="market yishou"><div class="mkt-line">一手: ${data.newCount}套</div></div>`;
                 }
                 if (marketHtml) {
                     marketHtml = `<div class="markets">${marketHtml}</div>`;
